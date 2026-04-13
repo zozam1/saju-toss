@@ -108,6 +108,38 @@ const ADVICE = [
 
 const LUCKY_COLORS = ['빨간색','파란색','흰색','노란색','초록색','보라색','주황색','하늘색','분홍색','금색','검은색','베이지색'];
 
+// 카테고리별 구체적 팁
+const FT_TIP = {
+  total: [
+    '중요한 결정이나 미팅을 오늘 잡으세요. 무엇을 시작해도 좋은 날입니다.',
+    '하고 싶었던 일을 추진하기에 좋습니다. 적극적으로 나서세요.',
+    '평소 루틴을 유지하는 것이 가장 좋습니다. 무리하지 마세요.',
+    '중요한 약속은 내일로 미루고 조용히 하루를 보내는 것을 권합니다.',
+    '새로운 시도보다 기존 업무에만 집중하고 큰 결정은 피하세요.',
+  ],
+  love: [
+    '좋아하는 사람에게 먼저 연락하거나 고백해보세요. 통할 가능성이 높습니다.',
+    '가까운 사람과 따뜻한 시간을 보내보세요. 먼저 다가가는 것이 좋습니다.',
+    '일상적인 안부 연락으로 관계를 유지하세요. 큰 변화보다 꾸준함이 중요합니다.',
+    '감정적인 대화나 중요한 고백은 내일로 미루는 것이 좋습니다.',
+    '혼자만의 시간을 갖고 감정을 정리해보세요. 표현은 나중에 하세요.',
+  ],
+  money: [
+    '투자나 재테크 관련 결정을 내리기 좋은 날입니다. 과감하게 움직여보세요.',
+    '미뤄둔 재정 정리나 저축 계획을 세우기에 좋습니다.',
+    '예산 범위 안에서만 소비하고 불필요한 지출을 점검해보세요.',
+    '큰 결제나 충동구매는 오늘 참는 것이 좋습니다. 카드를 꺼내기 전에 한번 더 생각하세요.',
+    '오늘은 지갑을 닫는 날로 정하세요. 모든 금전 결정을 최소 3일 뒤로 미루세요.',
+  ],
+  health: [
+    '새로운 운동을 시작하거나 건강검진을 예약하기 좋은 날입니다.',
+    '가벼운 유산소 운동과 충분한 수면으로 컨디션을 더 높여보세요.',
+    '규칙적인 식사와 수분 섭취를 잊지 마세요. 스트레칭을 자주 해주세요.',
+    '무리한 운동은 피하고 충분한 휴식을 취하세요. 몸의 신호를 무시하지 마세요.',
+    '오늘은 몸을 쉬게 하는 날로 정하세요. 무리한 일정과 야식을 피해주세요.',
+  ],
+};
+
 // 일간별 특성
 const STEM_DESC = [
   { name: '갑(甲)목', trait: '강한 추진력과 리더십을 가진 기질입니다. 새로운 시작에 강하고 성장 지향적입니다.' },
@@ -275,7 +307,7 @@ function Pillar({ label, stem, branch }) {
   );
 }
 
-function FortuneCard({ title, data }) {
+function FortuneCard({ title, catKey, data }) {
   return (
     <div style={{
       background: LVL_BG[data.level],
@@ -283,17 +315,30 @@ function FortuneCard({ title, data }) {
       borderRadius: 12, padding: '16px',
       marginBottom: 10,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#444' }}>{title}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#1C1C5E' }}>{title}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Stars level={data.level} />
           <span style={{
             fontSize: 11, fontWeight: 700, color: LVL_COLOR[data.level],
-            background: `${LVL_COLOR[data.level]}22`, padding: '2px 7px', borderRadius: 20,
+            background: `${LVL_COLOR[data.level]}22`, padding: '2px 8px', borderRadius: 20,
           }}>{LVL_LABEL[data.level]}</span>
         </div>
       </div>
-      <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#333' }}>{data.text}</p>
+      <p style={{ fontSize: 13.5, lineHeight: 1.75, color: '#333', marginBottom: 10 }}>{data.text}</p>
+      <div style={{
+        borderTop: `1px solid ${LVL_COLOR[data.level]}22`,
+        paddingTop: 10, display: 'flex', gap: 8, alignItems: 'flex-start',
+      }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: LVL_COLOR[data.level],
+          background: `${LVL_COLOR[data.level]}18`, padding: '2px 7px',
+          borderRadius: 6, whiteSpace: 'nowrap', marginTop: 1,
+        }}>오늘의 팁</span>
+        <p style={{ fontSize: 12.5, color: '#555', lineHeight: 1.65 }}>
+          {FT_TIP[catKey][data.level]}
+        </p>
+      </div>
     </div>
   );
 }
@@ -716,9 +761,34 @@ export default function App() {
               </div>
             </div>
           ))}
-          <p style={{ fontSize: 12, color: '#AAA', marginTop: 10, textAlign: 'center' }}>
-            상세 내용은 전체 운세 보기를 눌러 확인하세요.
-          </p>
+
+          {/* 총평 */}
+          {(() => {
+            const cats = [
+              { name: '총운', data: fortune.total },
+              { name: '애정운', data: fortune.love },
+              { name: '금전운', data: fortune.money },
+              { name: '건강운', data: fortune.health },
+            ];
+            const avg = Math.round(cats.reduce((s, c) => s + c.data.level, 0) / 4);
+            const best = cats.reduce((a, b) => a.data.level < b.data.level ? a : b);
+            const worst = cats.reduce((a, b) => a.data.level > b.data.level ? a : b);
+            const overallWord = ['매우 좋은','좋은','평범한','다소 주의가 필요한','어려운'][avg];
+            const hasDiff = best.name !== worst.name && best.data.level !== worst.data.level;
+            return (
+              <div style={{
+                marginTop: 12, background: '#F8F6FF',
+                border: '1px solid #DDD8F0', borderRadius: 10, padding: '12px 14px',
+              }}>
+                <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>오늘의 총평</div>
+                <p style={{ fontSize: 13.5, color: '#333', lineHeight: 1.75 }}>
+                  오늘은 전반적으로 <strong style={{ color: LVL_COLOR[avg] }}>{overallWord}</strong> 기운이 흐르는 날입니다.
+                  {hasDiff && ` 특히 ${best.name}에서 좋은 흐름이 보이며, ${worst.name}에는 다소 주의가 필요합니다.`}
+                  {' '}상세한 내용과 오늘의 팁은 아래에서 확인해보세요.
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* 자세히 보기 버튼 or 상세 운세 */}
@@ -732,10 +802,10 @@ export default function App() {
           </button>
         ) : (
           <div style={{ marginBottom: 4 }}>
-            <FortuneCard title="총운" data={fortune.total} />
-            <FortuneCard title="애정운" data={fortune.love} />
-            <FortuneCard title="금전운" data={fortune.money} />
-            <FortuneCard title="건강운" data={fortune.health} />
+            <FortuneCard title="총운" catKey="total" data={fortune.total} />
+            <FortuneCard title="애정운" catKey="love" data={fortune.love} />
+            <FortuneCard title="금전운" catKey="money" data={fortune.money} />
+            <FortuneCard title="건강운" catKey="health" data={fortune.health} />
 
             {/* 오늘의 조언 */}
             <div style={{
