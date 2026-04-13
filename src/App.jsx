@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { GoogleAdMob, TossAds } from '@apps-in-toss/web-bridge';
 
 // ─── Ad IDs (콘솔에서 발급받은 ID로 교체) ────────────────────────────────────
-const BANNER_AD_ID = 'YOUR_BANNER_AD_ID';
-const REWARDED_AD_ID = 'YOUR_REWARDED_AD_ID';
+const BANNER_AD_ID = 'ait.v2.live.3a2c66402a6f4c63';
+const REWARDED_AD_ID = 'ait.v2.live.f95fb4e8e11d44d5';
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
