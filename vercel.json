@@ -1,8 +1,7 @@
 {
-  "buildCommand": "",
-  "outputDirectory": "public",
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/terms.html", "destination": "/terms.html" },
-    { "source": "/privacy.html", "destination": "/privacy.html" }
+    { "source": "/((?!terms\\.html|privacy\\.html).*)", "destination": "/index.html" }
   ]
 }
