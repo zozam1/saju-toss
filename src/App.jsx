@@ -108,6 +108,28 @@ const ADVICE = [
 
 const LUCKY_COLORS = ['빨간색','파란색','흰색','노란색','초록색','보라색','주황색','하늘색','분홍색','금색','검은색','베이지색'];
 
+// 일간별 특성
+const STEM_DESC = [
+  { name: '갑(甲)목', trait: '강한 추진력과 리더십을 가진 기질입니다. 새로운 시작에 강하고 성장 지향적입니다.' },
+  { name: '을(乙)목', trait: '유연하고 섬세한 감수성을 지닙니다. 적응력이 뛰어나고 조화를 중시합니다.' },
+  { name: '병(丙)화', trait: '밝고 활동적인 에너지가 넘칩니다. 사교성이 좋고 주변을 환하게 만드는 기질입니다.' },
+  { name: '정(丁)화', trait: '따뜻하고 섬세한 감성을 지닙니다. 집중력과 예술적 감각이 뛰어납니다.' },
+  { name: '무(戊)토', trait: '듬직하고 포용력이 큽니다. 안정감을 주고 신뢰받는 성격입니다.' },
+  { name: '기(己)토', trait: '세심하고 현실적인 판단력이 강합니다. 꼼꼼하고 실용적인 기질입니다.' },
+  { name: '경(庚)금', trait: '결단력이 강하고 의리를 중시합니다. 원칙적이고 카리스마 있는 성격입니다.' },
+  { name: '신(辛)금', trait: '예리한 분석력과 심미안을 지닙니다. 완벽주의 성향이 강하고 세련됩니다.' },
+  { name: '임(壬)수', trait: '지혜롭고 적응력이 탁월합니다. 다양한 분야에 재능이 있고 유연합니다.' },
+  { name: '계(癸)수', trait: '깊은 통찰력과 감수성을 지닙니다. 내면이 풍부하고 직관력이 뛰어납니다.' },
+];
+
+// 오늘의 키워드 (fortune seed 기반)
+const KEYWORDS = [
+  ['집중','결단','전진'], ['소통','화합','인연'], ['절약','계획','준비'],
+  ['휴식','회복','충전'], ['도전','변화','시작'], ['인내','신중','점검'],
+  ['창의','표현','열정'], ['감사','나눔','배려'], ['정리','마무리','완성'],
+  ['학습','성장','발전'],
+];
+
 // ─── 사주 계산 ────────────────────────────────────────────────────────────────
 function getJDN(year, month, day) {
   const a = Math.floor((14 - month) / 12);
@@ -307,6 +329,9 @@ export default function App() {
   const [aiA, setAiA]           = useState('');
   const [aiError, setAiError]   = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+
+  // 오행 설명 팝업
+  const [showOhangInfo, setShowOhangInfo] = useState(false);
 
   // 광고 상태
   const [adLoaded, setAdLoaded] = useState(false);
@@ -547,39 +572,152 @@ export default function App() {
         <div style={{
           marginTop: 10, padding: '8px 12px',
           background: 'rgba(255,255,255,0.1)', borderRadius: 8,
-          display: 'flex', gap: 8, justifyContent: 'center',
         }}>
-          {ELEM_NAMES.map((n, i) => (
-            <div key={i} style={{ textAlign: 'center', opacity: ohang[i] === 0 ? 0.3 : 1 }}>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>{n}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{ohang[i]}</div>
-            </div>
-          ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>오행 분포</span>
+            <button onClick={() => setShowOhangInfo(true)} style={{
+              background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+              borderRadius: '50%', width: 18, height: 18, fontSize: 11,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}>?</button>
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+            {ELEM_NAMES.map((n, i) => (
+              <div key={i} style={{ textAlign: 'center', opacity: ohang[i] === 0 ? 0.3 : 1 }}>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>{n}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: ohang[i] === 0 ? '#ff8a80' : '#fff' }}>
+                  {ohang[i] === 0 ? '✕' : ohang[i]}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* 오행 설명 팝업 */}
+        {showOhangInfo && (
+          <div onClick={() => setShowOhangInfo(false)} style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 200,
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: '#fff', borderRadius: '20px 20px 0 0',
+              padding: '24px 20px 40px', width: '100%', maxWidth: 480,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1C1C5E' }}>오행 분포란?</span>
+                <button onClick={() => setShowOhangInfo(false)} style={{
+                  background: '#F0F0F0', border: 'none', borderRadius: '50%',
+                  width: 28, height: 28, fontSize: 14, cursor: 'pointer', color: '#555',
+                }}>✕</button>
+              </div>
+              <p style={{ fontSize: 13.5, lineHeight: 1.75, color: '#444', marginBottom: 16 }}>
+                사주팔자(연·월·일·시 4개 기둥)에 담긴 <strong>목·화·토·금·수</strong> 5가지 기운의 개수입니다.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                {[
+                  { name: '목(木)', color: '#2E7D32', desc: '성장, 발전, 창의력' },
+                  { name: '화(火)', color: '#B71C1C', desc: '열정, 표현력, 인기' },
+                  { name: '토(土)', color: '#6D4C41', desc: '안정, 신뢰, 중재력' },
+                  { name: '금(金)', color: '#F9A825', desc: '결단력, 의리, 추진력' },
+                  { name: '수(水)', color: '#1565C0', desc: '지혜, 유연함, 감수성' },
+                ].map(e => (
+                  <div key={e.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      fontSize: 12, fontWeight: 700, color: e.color,
+                      background: `${e.color}18`, padding: '3px 8px', borderRadius: 6, minWidth: 52, textAlign: 'center',
+                    }}>{e.name}</span>
+                    <span style={{ fontSize: 13, color: '#555' }}>{e.desc}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{
+                background: '#FFF8F0', border: '1px solid #FFE0CC',
+                borderRadius: 10, padding: '12px 14px',
+              }}>
+                <p style={{ fontSize: 13, color: '#C84B00', lineHeight: 1.7 }}>
+                  <strong>✕ 표시 = 부족한 기운</strong><br />
+                  해당 오행의 기운이 0개로, 삶에서 그 특성이 약하게 나타날 수 있습니다. AI 선생님께 부족한 기운을 어떻게 보완하면 좋을지 물어보세요.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 본문 */}
       <div style={{ padding: '20px 16px 0' }}>
 
-        {/* 총운 미리보기 */}
+        {/* 일간 특성 카드 */}
         <div style={{
-          background: '#fff', borderRadius: 14, padding: '18px 16px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 12,
+          background: '#fff', borderRadius: 14, padding: '16px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 10,
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#1C1C5E' }}>오늘의 총운</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Stars level={fortune.total.level} />
-              <span style={{
-                fontSize: 11, fontWeight: 700, color: LVL_COLOR[fortune.total.level],
-                background: `${LVL_COLOR[fortune.total.level]}22`,
-                padding: '2px 8px', borderRadius: 20,
-              }}>{LVL_LABEL[fortune.total.level]}</span>
+          <div style={{ fontSize: 11, color: '#999', marginBottom: 6 }}>나의 일간 특성</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{
+              fontSize: 22, fontWeight: 800, color: ELEM_COLORS[ELEM_BY_STEM[saju.day.stem]],
+              background: `${ELEM_COLORS[ELEM_BY_STEM[saju.day.stem]]}15`,
+              width: 44, height: 44, borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{STEMS[saju.day.stem]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1C1C5E', marginBottom: 2 }}>
+                {STEM_DESC[saju.day.stem].name}
+              </div>
+              <p style={{ fontSize: 12.5, color: '#666', lineHeight: 1.6 }}>
+                {STEM_DESC[saju.day.stem].trait}
+              </p>
             </div>
           </div>
-          <p style={{ fontSize: 13.5, color: '#555', lineHeight: 1.7 }}>
-            {/* 첫 문장만 미리보기 */}
-            {fortune.total.text.split('. ')[0] + '.'}
+        </div>
+
+        {/* 오늘의 키워드 */}
+        <div style={{
+          background: '#fff', borderRadius: 14, padding: '16px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 10,
+        }}>
+          <div style={{ fontSize: 11, color: '#999', marginBottom: 10 }}>오늘의 키워드</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {KEYWORDS[fortuneSeed(user, today) % KEYWORDS.length].map((kw, i) => (
+              <span key={i} style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600,
+                background: ['#EEF2FF','#F0FDF4','#FFFBEB'][i],
+                color: ['#3730A3','#166534','#92400E'][i],
+                border: `1px solid ${['#C7D2FE','#BBF7D0','#FDE68A'][i]}`,
+              }}># {kw}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* 운세 항목 별점 미리보기 */}
+        <div style={{
+          background: '#fff', borderRadius: 14, padding: '16px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 10,
+        }}>
+          <div style={{ fontSize: 11, color: '#999', marginBottom: 12 }}>오늘의 운세 요약</div>
+          {[
+            { label: '총운', data: fortune.total },
+            { label: '애정운', data: fortune.love },
+            { label: '금전운', data: fortune.money },
+            { label: '건강운', data: fortune.health },
+          ].map(({ label, data }) => (
+            <div key={label} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '8px 0', borderBottom: '1px solid #F0F0F0',
+            }}>
+              <span style={{ fontSize: 13.5, color: '#333', fontWeight: 500 }}>{label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Stars level={data.level} />
+                <span style={{
+                  fontSize: 11, fontWeight: 700, color: LVL_COLOR[data.level],
+                  background: `${LVL_COLOR[data.level]}18`,
+                  padding: '2px 8px', borderRadius: 20, minWidth: 28, textAlign: 'center',
+                }}>{LVL_LABEL[data.level]}</span>
+              </div>
+            </div>
+          ))}
+          <p style={{ fontSize: 12, color: '#AAA', marginTop: 10, textAlign: 'center' }}>
+            상세 내용은 전체 운세 보기를 눌러 확인하세요.
           </p>
         </div>
 
