@@ -206,7 +206,7 @@ ${question}
 답변은 한국어로 3~4문장, 200자 이내로 간결하게 작성해주세요. 사주 관점에서 구체적으로 조언해주세요.`;
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -217,6 +217,7 @@ ${question}
     }
   );
   const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 가져오지 못했습니다.';
 }
 
@@ -304,6 +305,7 @@ export default function App() {
   // AI 상태
   const [aiQ, setAiQ]           = useState('');
   const [aiA, setAiA]           = useState('');
+  const [aiError, setAiError]   = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
   // 광고 상태
@@ -401,11 +403,13 @@ export default function App() {
     if (!aiQ.trim() || aiLoading) return;
     setAiLoading(true);
     setAiA('');
+    setAiError('');
     try {
       const answer = await askGemini(saju, ohang, today, aiQ);
       setAiA(answer);
-    } catch {
-      setAiA('답변을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      console.error('Gemini error:', err);
+      setAiError('일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
     setAiLoading(false);
   }
@@ -677,6 +681,18 @@ export default function App() {
                   }}>
                   {aiLoading ? '답변 생성 중...' : '답변 받기'}
                 </button>
+              )}
+
+              {aiError && (
+                <div style={{ marginTop: 10 }}>
+                  <p style={{
+                    fontSize: 13, color: '#E53935', marginBottom: 8,
+                    background: '#FFF5F5', padding: '10px 12px', borderRadius: 8,
+                  }}>{aiError}</p>
+                  <button onClick={handleAskAI} style={{ ...primaryBtn }}>
+                    다시 시도
+                  </button>
+                </div>
               )}
 
               {aiA && (
